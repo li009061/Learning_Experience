@@ -69,3 +69,25 @@ int hailstone_steps(unsigned int n) {
     }
     return steps;
 }
+
+//三点求圆心
+int get_circle_center(double x1, double y1, double x2, double y2, double x3, double y3,
+                      double *cx, double *cy) {
+    double A = 2 * (x2 - x1);
+    double B = 2 * (y2 - y1);
+    double C = x2 * x2 + y2 * y2 - x1 * x1 - y1 * y1;
+
+    double D = 2 * (x3 - x1);
+    double E = 2 * (y3 - y1);
+    double F = x3 * x3 + y3 * y3 - x1 * x1 - y1 * y1;
+
+    double det = A * E - B * D;
+
+    if (fabs(det) < 1e-12) {
+        return 0;   // 三点共线，无解
+    }
+
+    *cx = (C * E - B * F) / det;
+    *cy = (A * F - C * D) / det;
+    return 1;
+}

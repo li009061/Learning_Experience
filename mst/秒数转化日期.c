@@ -1,95 +1,81 @@
-//2.写一程序，实现从一个 DWORD 表示的秒数（从 2000 年 1 月 1 日 0 时 0 分 0 秒为起点计的秒数）
-//转化为形如 YYYY 年 MM 月 DD 日 HH 时 mm 分 SS 秒表示的时间（即把秒数转化为年月日时分秒）
-
 #include <stdio.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
 
-typedef struct Storage_date
+struct date
 {
-    unsigned int year;
-    unsigned int month;
-    unsigned int day;
-    unsigned int time;
-    unsigned int minute;
-    unsigned int second;
+    int year, month, day;
+    int hour, minute, second;
 };
 
-int year_conversion(unsigned int a,unsigned int first_year){
-    //平年=31536000，闰年=31622400
-    struct Storage_date end={
-        end.year,
-    };
-    while (1)
-    {
-        while (is_leap_year(first_year))
-        {
-            if (a > 31622400)
-            {
-                a -= 31622400;
-                first_year++;
-                break;
-            }else
-                end.year = first_year;
-                return a;
-        }
-        
-        while (!is_leap_year(first_year))
-        {
-            if (a > 31536000)
-            {
-                a -= 31536000;
-                first_year++;
-                break;
-            }else
-                end.year = first_year;
-                return a;
-        }
-    }
-    
-}
+int leap[]   = {31,29,31,30,31,30,31,31,30,31,30,31};
+int common[] = {31,28,31,30,31,30,31,31,30,31,30,31};
 
-int month_conversion(unsigned int a,unsigned int end_year){
-    if(a < 86400){
-        return 1;
-    }
-    int days_in_month[] = {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    int is_day = a / 86400;
-    int now_day;
-    if (is_leap_year(end_year));
-    else{
-        days_in_month[1] = 28;
-    }
-    struct Storage_date end={
-        end.month = 1,
-    };
-    for (end.month = 1; end.month < 13; end.minute++)
-    {
-        now_day = is_day - days_in_month[end.month];
-    }
-    
-}
-
-int is_leap_year(int year){
-    if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))
-    {
-        return 1;
-    }else
-    return 0;
+bool is_leap(int year)
+{
+    return ((year%4==0 && year%100!=0) || (year%400==0));
 }
 
 int main(int argc, char const *argv[])
 {
-    unsigned int total;
-    struct Storage_date first={
-        first.year = 2000,
-        first.month = 01,
-        first.day = 01,
-        first.time =0,
-        first.minute = 0,
-        first.second =0
-    };
+    int32_t sec;
+    scanf("%d", &sec); // 100000000秒
 
-    total = year_conversion(total, first.year);
-    int month = month_conversion(total,first.year);
+    // 500天
+    int days = sec/(3600*24);
+
+    struct date result;
+    bzero(&result, sizeof(result));
+
+    // 计算年份
+    int cur_year = 2000;
+    while(1)
+    {
+        int d = is_leap(cur_year) ? 366 : 365;
+
+        if(days > d)
+        {
+            cur_year++;
+            days -= d;
+        }
+        else
+            break;
+    }
+    result.year = cur_year;
+
+    // 129天
+    int cur_mon = 1;
+    while(1)
+    {
+        int m = is_leap(cur_year) ? leap[cur_mon] : common[cur_mon];
+        if(days > m)
+        {
+            cur_mon++;
+            days -= m;
+        }
+        else
+            break;
+    }
+    result.month = cur_mon;
+
+    // 16天
+    result.day = days+1;
+
+    // 计算剩下的不足一天的秒数 --> 时分秒
+    int remind_sec = sec % (3600*24);
+
+    // 4000秒
+    result.hour = remind_sec / 3600;
+    result.minute = (remind_sec-result.hour*3600) / 60;
+    result.second = remind_sec % 60;
+
+    printf("经过%d秒之后是：%d年%d月%d日，", sec, result.year,
+                                                  result.month,
+                                                result.day);
+    printf("%d时%d分%d秒\n", result.hour,
+                             result.minute,
+                             result.second);
 
     return 0;
 }

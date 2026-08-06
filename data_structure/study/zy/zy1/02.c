@@ -11,82 +11,135 @@ typedef struct node{
     struct node *next; 
 }node;
 
-struct node * inis_list(void){
-    struct node *head = malloc(sizeof(struct node));
-    if (head != NULL)
-    {
-        head ->next = NULL;
-    }
-    return head;
-}
 
+//添加新节点
 struct node * new_node(int a){
     struct node *new = malloc(sizeof(struct node));
     if (new != NULL)
     {
         new ->data = a;
-        new ->next =NULL;
+        new ->next = new;
     }
-    
+    return new;
 }
 
-void add_node_tail(struct node *head, struct node *new){
-    if (head == NULL || new == NULL) 
-    return;
-    struct node *p = head;
-    while (p->next != NULL)
-    {
-        p = p ->next;
+
+// 尾插法（不带头节点）
+void add_tail(node **head, node *new) {
+    if (*head == NULL) {
+        // 空链表：新节点成为唯一节点，next 指向自己
+        new->next = new;
+        *head = new;
+        return;
     }
-    p ->next = new;
+
+    // 找到尾节点（tail->next == head）
+    node *tail = *head;
+    while (tail->next != *head) {
+        tail = tail->next;
+    }
+
+    // 插入新节点
+    new->next = *head;
+    tail->next = new;
 }
 
-void show_list(node *head, int count) {
-    node *p = head->next;
-    for (int i = 0; i < count && p != NULL; i++) {
-        printf("%d ", p->data);
+// 显示链表（遍历一圈回到 head）
+void show_list(node *head) {
+    if (head == NULL) {
+        printf("链表为空\n");
+        return;
+    }
+
+    node *p = head;
+    printf("链表内容: ");
+    do {
+        printf("%d\t", p->data);
         p = p->next;
-    }
+    } while (p != head);
     printf("\n");
 }
 
-int main() {
-    int n = 13;
-    node *head = inis_list();
-    
-    // 1. 建立单向链表（尾指针指向最后一个数据节点）
-    node *tail = head;
-    for (int i = 1; i <= n; i++) {
-        node *new = new_node(i);
-        add_node_tail(head, new);
-        tail = new; // 记录最后一个节点
-    }
-    
-    // 2. 【关键修正】把尾部接到第一个数据节点，真正成环！
-    tail->next = head->next; 
-    
-    // 3. 准备模拟：从第一个数据节点（编号1）开始报数
-    node *prev = tail;      // 前驱指向尾（因为环，尾是头的前驱）
-    node *cur = head->next; // 当前指向编号1
-    int remaining = n;
+// 释放整个链表
+void free_list(node **head) {
+    if (*head == NULL) return;
 
-    // 4. 循环删除，直到剩下2个
-    while (remaining > 2) {
-        // 报数1和2：移动两步（prev和cur同步前进）
-        // 注意：要移动 2 次，使得 cur 指向报数 3 的人
-        for (int step = 1; step < 3; step++) {
-            prev = cur;
-            cur = cur->next;
+    node *p = *head;
+    node *start = *head;
+    if (p != NULL) {
+        do {
+            node *next = p->next;
+            free(p);
+            p = next;
+        } while (p != start);
+    }
+    *head = NULL;
+}
+
+// 返回链表的尾节点（不带头节点）
+node *find_tailnode(node *head) {
+    if (head == NULL) 
+        return NULL;
+
+    node *p = head;
+    while (p->next != head) {
+        p = p->next;
+    }
+    return p;
+}
+
+// 删除指定节点
+void remove_node(node **head, int data){
+    if(*head == NULL)
+        return;
+
+    
+}
+
+int main(int argc, char const *argv[])
+{
+    int count = 0;
+    node *head = NULL;
+    // 插入 n 个节点
+    int n;
+    printf("请输入有多少人参加：\n");
+    while(scanf("%d", &n) != 1){
+        printf("请输入整数！\n");
+        while(getchar() != '\n');
+    }
+    for (int i = 1; i <= n; i++)
+    {
+        add_tail(&head, new_node(i));
+        count++;
+    }
+
+    show_list(head);
+    printf("%d\n", count);
+
+    node *p = head;
+    node *s = find_tailnode(head);
+    // 3.每过三删除节点
+    while (count > 2)
+    {
+        for (int step = 1; step < 3; step++)
+        {
+            p = p->next;
+            s = s->next;
         }
-        // 此时 cur 就是报数 3 的人，删除它
-        prev->next = cur->next;  // 前驱跳过当前
-        free(cur);
-        cur = prev->next;        // 从下一个人重新报数
-        remaining--;
+        if (p == head) {
+            head = p->next;
+        }
+        s->next = p->next;
+        free(p);
+        p = s->next;
+        count--;
     }
-
-    // 5. 输出结果（剩下两个节点就在环里）
-    printf("\n最后剩余两人: %d 和 %d\n", cur->data, cur->next->data);
     
+    //4.展示链表
+    show_list(head);
+
+    //5.释放链表
+    free_list(&head);
+
     return 0;
 }

@@ -54,19 +54,22 @@ void show_list(struct node *head){
 }
 
 void reverse(struct node *head){
+    struct node *p = head->next;
+    head->next = NULL;
 
-    struct node *p = head ->next;
-    head ->next = NULL;
-
-    struct node *n;
+    struct node *a;
     while (p != NULL)
     {
-    n = p ->next;
-    p ->next = head ->next;
-    head ->next = p;
-    p = n;
+        a = p->next;
+        p->next = head->next;
+        head->next = p;
+        p = a;
+
     }
+    
 }
+
+
 
 int main(int argc, char const *argv[])
 {

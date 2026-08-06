@@ -12,12 +12,16 @@ a.out
 *.tmp
 *.exe
 *.obj
+*.i
+
+# Windows 区域标识文件
+*:Zone.Identifier
 
 # VS Code 配置
-.vscode/study/mst/[a-zA-Z]*
-# 忽略编译产物
-study/**/[a-z]*
-study/**/[A-Z]*
-*.o
-*.exe
-a.out
+.vscode/
+
+# 忽略 study 目录下的编译产物
+study/**/*.o
+study/**/*.out
+study/**/*.exe
+study/**/a.out

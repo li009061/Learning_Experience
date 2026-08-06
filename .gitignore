@@ -1,9 +1,9 @@
 # 编译产物
-[0-99]*
-
-# 但不要忽略以数字开头的 .c 和 .h 源文件
-![0-99]*.c
-![0-99]*.h
+[0-9]*
+# 但不要忽略以数字开头的目录、.c 和 .h 源文件
+![0-9]*/
+![0-9]*.c
+![0-9]*.h
 
 # 忽略其他编译产物
 a.out
@@ -31,3 +31,6 @@ LCD
 rgb_serial
 c/lianxi/rgb
 c/lianxi/rgb_arm
+
+# 百万行测试数据文件（过大，不入库）
+data_structure/6.Classic_Search_Algorithms_and_Hash\ Tables/*.txt

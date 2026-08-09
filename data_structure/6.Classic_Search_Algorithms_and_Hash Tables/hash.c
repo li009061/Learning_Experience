@@ -1,14 +1,11 @@
-// 哈希表、散列表
-
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include <strings.h>
 #include <time.h>
 
 #define SIZE 20
+#define HASH_PRIME 19   // 质数，减少冲突
 
 typedef int datatype;
 
@@ -22,45 +19,79 @@ typedef struct
 {
     unsigned long table_size;
     struct node **table_entry;
+} hash_table;
 
-}hash_table;
-
-void show(hash_table *ht, unsigned long pos, datatype data);
+// 统一哈希函数
+unsigned long hash_func(datatype data) {
+    return data % HASH_PRIME;
+}
 
 hash_table *init_ht(unsigned long size)
 {
-    // 哈希表的管理结构体
     hash_table *ht = malloc(sizeof(hash_table));
     ht->table_size = size;
-
-    // 哈希表（数组）
     ht->table_entry = calloc(size, sizeof(struct node *));
-
     return ht;
+}
+
+// 普通展示
+void show_ht(hash_table *ht)
+{
+    for (int i = 0; i < ht->table_size; i++)
+    {
+        printf("table_entry[%d]: ", i);
+        struct node *p = ht->table_entry[i];
+        
+        while (p != NULL)
+        {
+            printf("%d -> ", p->data);
+            p = p->next;
+        }
+        printf("NULL\n");
+    }
+}
+
+// 插入时展示（标记插入位置）
+void show_insert(hash_table *ht, unsigned long pos, datatype data)
+{
+    for (int i = 0; i < ht->table_size; i++)
+    {
+        printf("table_entry[%d]: ", i);
+        struct node *p = ht->table_entry[i];
+        
+        while (p != NULL)
+        {
+            printf("%d -> ", p->data);
+            p = p->next;
+        }
+        printf("NULL");
+        
+        if (pos == i) {
+            printf("  <-- 插入 %d", data);
+        }
+        printf("\n");
+    }
+    printf("=================================\n");
 }
 
 void hash_add(datatype data, hash_table *ht)
 {
-    // 使用保留除数法，获得哈希地址（即数组的下标值）
-    unsigned long hash_addr = data % (SIZE-1);
-
+    unsigned long hash_addr = hash_func(data);
+    
     struct node *new = malloc(sizeof(struct node));
     new->data = data;
     new->next = NULL;
-
-    show(ht, hash_addr, data);
-    printf("=================================\n");
-
-    // 1：该哈希地址可用，直接将新节点放进去
-    if(ht->table_entry[hash_addr] == NULL)
+    
+    show_insert(ht, hash_addr, data);
+    
+    if (ht->table_entry[hash_addr] == NULL)
     {
         ht->table_entry[hash_addr] = new;
     }
-    // 2：该哈希地址不可用，将新节点链到冲突链表的末尾
     else
     {
         struct node *p = ht->table_entry[hash_addr];
-        while(p->next != NULL)
+        while (p->next != NULL)
         {
             p = p->next;
         }
@@ -68,88 +99,74 @@ void hash_add(datatype data, hash_table *ht)
     }
 }
 
-void show(hash_table *ht, unsigned long pos, datatype data)
+void hash_search(datatype data, hash_table *ht)
 {
-    struct node *p;
-
-    int i;
-    for(i=0; i<ht->table_size; i++)
-    {
-        p = ht->table_entry[i];
-
-        printf("table_entry[%d]: ", i);
-
-        if(p != NULL)
-        {
-            struct node *q = p;
-            while(q != NULL)
-            {
-                printf("%d\t", q->data);
-                q = q->next;
-            }
-        }
-    
-        if(pos == i)
-        {
-            printf("\t <-- %d\n", data);
-        }
-        else
-        {
-            printf("\n");
-        }
-    }
-}
-
-//查表
-void hash_search(datatype data, hash_table *ht){
-    unsigned long find = data % SIZE;
-
+    unsigned long find = hash_func(data);
     struct node *p = ht->table_entry[find];
-    while(p != NULL){
-        if(p->data == data){
-            printf("找到%d\n", p->data);
+    int step = 0;
+    
+    while (p != NULL)
+    {
+        step++;
+        if (p->data == data)
+        {
+            printf("找到 %d，位于 table_entry[%lu]，比较 %d 次\n", 
+                   data, find, step);
             return;
         }
-        else{
-            p = p->next;
-        }
+        p = p->next;
     }
-
-    printf("未找到\n");
-    return;
+    
+    printf("未找到 %d，位于 table_entry[%lu]，比较 %d 次\n", 
+           data, find, step);
 }
 
+// 释放内存
+void destroy_ht(hash_table *ht)
+{
+    for (int i = 0; i < ht->table_size; i++)
+    {
+        struct node *p = ht->table_entry[i];
+        while (p != NULL)
+        {
+            struct node *tmp = p;
+            p = p->next;
+            free(tmp);
+        }
+    }
+    free(ht->table_entry);
+    free(ht);
+}
 
 int main(void)
 {
-    // 哈希表的初始化
     hash_table *ht = init_ht(SIZE);
-
-    // 使用除留余数法/冲突链表的形式，造表
+    
     srand(time(NULL));
-    int i;
-    for(i=0; i<10; i++)
+    for (int i = 0; i < 10; i++)
     {
-        hash_add(rand()%1000, ht);
-        sleep(1);
+        hash_add(rand() % 1000, ht);
     }
-    show(ht, -1, -1);
-
-    // 查表
+    
+    printf("\n最终哈希表：\n");
+    show_ht(ht);
+    
+    printf("\n请输入你要查找的数（-1退出）:\n");
     int m;
-    printf("请输入你要查找的数:\n");
-    while(1){
-        if(scanf("%d", &m) != 1){
-
-            printf("请重新输入一个整数\n");
-            while(getchar() != '\n');
-        }else{
-            if(m == -1){
-                break;
-            }
+    while (1)
+    {
+        if (scanf("%d", &m) != 1)
+        {
+            printf("输入错误，请重新输入整数\n");
+            while (getchar() != '\n');
+            continue;
         }
+        
+        if (m == -1) break;
+        
         hash_search(m, ht);
     }
-
+    
+    destroy_ht(ht);
     return 0;
 }

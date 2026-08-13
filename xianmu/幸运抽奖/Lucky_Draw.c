@@ -41,6 +41,7 @@ int main(){
     for(int i =0; i < 18; i++){
         
         idx = rand() % count;
+        // 输出当前抽奖名字到标准错误：\r回到行首，\033[K清除整行，实现同一位置滚动闪烁效果
         fprintf(stderr, "\r%s\033[K", names[idx]);
         usleep(delay);
         delay = delay *5 /4;

@@ -1,4 +1,5 @@
 #include "book.h"
+#include "borrow.h"
 
 
 //添加图书
@@ -46,12 +47,24 @@ void del_book(){
     Book *p;
     list_for_each_entry(p, &book_list, list){
         if(strcmp(p->book_name, name) == 0){
-            //判断是否有被借阅，被借阅的书籍无法被删除
+            
+            int borrowed = 0;
+            BorrowRecord *rec;
+            list_for_each_entry(rec, &borrow_list, list){
+                if(rec->book_id == p->book_id && rec->return_time[0] == '\0'){
+                    borrowed = 1;   // 找到这本书的未还记录
+                    break;
+                }
+            }
 
-            //删除该图书
-            list_del_init(&p->list);
-            free(p);
-            printf("删除成功\n");
+            if(borrowed){
+                printf("该书正在被借阅，无法删除\n");
+            }else{
+                list_del_init(&p->list);
+                free(p);
+                printf("删除成功\n");
+            }
+
             return;
         }
     }

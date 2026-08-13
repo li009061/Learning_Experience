@@ -88,7 +88,7 @@ void load_borrowdata(){
 
         list_add_tail(&p->list, &borrow_list);
     }
-    
+
     fclose(fp);
     printf("借阅信息读取成功!\n");
 }
@@ -144,9 +144,9 @@ void write_borrowdata(void){
     BorrowRecord *p;
     list_for_each_entry(p, &borrow_list, list){
         char bt[50], rt[50];
-        strcpy(bt, p->borrow_time);
-        bt[strcspn(bt, "\n")] = '\0';  
-        strcpy(rt, p->return_time);
+        strcpy(bt, p->borrow_time);                 //因为time_now = time(NULL)
+        bt[strcspn(bt, "\n")] = '\0';               //strcpy(....,ctime(&now))----ctime() 生成的借书时间末尾自带 \n（"Sun Aug 9 17:24:52 2026\n"）
+        strcpy(rt, p->return_time);                 //所以要切掉\n字符
         rt[strcspn(rt, "\n")] = '\0';  
         fprintf(fp, "%d, %d, %s, %s\n", p->book_id, p->user_id, bt, rt);
     }

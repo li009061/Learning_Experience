@@ -1,4 +1,5 @@
 #include "user.h"
+#include "borrow.h"
 
 
 //初始化用户
@@ -139,11 +140,27 @@ void del_user(void){
     char name[64];
     scanf("%s", name);
     User * user;
-    list_for_each_entry(user, &user_list,list){
+    list_for_each_entry(user, &user_list, list){    // ← 加回这行
         if(strcmp(user->name, name) == 0){
-            //检查该用户是否有借阅记录(如果有借阅情况，给管理员自己判断能不能删除)
+            int has_borrow = 0;
+            BorrowRecord *rec;
+            list_for_each_entry(rec, &borrow_list, list){
+                if(rec->user_id == user->id){
+                    has_borrow = 1;
+                    break;
+                }
+            }
 
-            //删除该用户
+            if(has_borrow){
+                printf("该用户有借阅记录，是否继续删除(1.是 2.否):");
+                int is_del;
+                scanf("%d", &is_del);
+                if(is_del != 1){
+                    printf("删除操作已取消\n");
+                    return;
+                }
+            }
+
             list_del_init(&user->list);
             free(user);
             printf("删除成功\n");
@@ -151,6 +168,7 @@ void del_user(void){
         }
     }
     printf("未找到该用户\n");
+    return;
 }
 
 //查询用户

@@ -34,3 +34,10 @@ c/lianxi/rgb_arm
 
 # 百万行测试数据文件（过大，不入库）
 data_structure/6.Classic_Search_Algorithms_and_Hash\ Tables/*.txt
+
+# 编译产物
+main
+main_arm
+Lucky_Draw_arm
+*.o
+a.out

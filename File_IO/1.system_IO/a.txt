@@ -1,0 +1,12 @@
+total 748
+-rwxr-xr-x 1 xfeng xfeng 709448 Aug 11 17:12 Led_test
+-rwxr-xr-x 1 xfeng xfeng  16120 Aug 12 09:02 a.out
+-rw-r--r-- 1 xfeng xfeng     23 Aug 11 15:38 a.txt
+-rw-r--r-- 1 xfeng xfeng   1593 Aug 11 10:16 copy.c
+-rw-r--r-- 1 xfeng xfeng   1259 Aug 12 09:02 dup.c
+-rw-r--r-- 1 xfeng xfeng    820 Aug 11 16:12 fcntl.c
+-rw-r--r-- 1 xfeng xfeng    727 Aug 11 15:38 ioctl.c
+-rw-r--r-- 1 xfeng xfeng    749 Aug 11 10:59 lseek.c
+-rw-r--r-- 1 xfeng xfeng    508 Aug 11 10:24 max_open.c
+-rw-r--r-- 1 xfeng xfeng   2065 Aug 11 17:06 mmap.c
+-rw-r--r-- 1 xfeng xfeng    486 Aug 11 10:55 stdio.c

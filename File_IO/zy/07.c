@@ -24,10 +24,7 @@ void copy_file(FILE *fp1, FILE *fp2)
         if(n == 0)
             break;
 
-        if(fwrite(buf, 1, n, fp2) != n){
-            perror("文件写入失败");
-            return;
-        }
+        fwrite(buf, 1, n, fp2);
     }
 }
 

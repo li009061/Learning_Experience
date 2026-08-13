@@ -1,53 +1,166 @@
-// 标准输入输出：printf/fprintf
+// (目录操作、文件IO函数)
+// 编写一个程序，令其功能尽量向命令 “cp” 靠近。
+
 #include <stdio.h>
-// 字符串操作：bzero函数
-#include <string.h>
-// stat结构体、S_ISREG/S_ISDIR宏定义
-#include <sys/stat.h>
-// 系统文件操作相关（目录拷贝函数依赖）
-#include <dirent.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <string.h>
+#include <errno.h>
+#include <dirent.h>
 
-// 函数前置声明（主函数内调用了这两个自定义函数，需提前声明）
-// 普通文件拷贝函数
-void copy_file(FILE *fp1,FILE *fp2);
-// 目录递归拷贝函数
-void copy_dir(const char *src_dir, const char *dst_dir);
+void copy_file(FILE *fp1,FILE *fp2){
+    if(fp1 == NULL || fp2 == NULL)
+        return;
 
-int main(int argc, char const *argv[]) // 程序运行格式：./mycpy src dst
-{
-    // 判断命令行参数合法性：需要 程序名+源路径+目标路径 共3个参数
-    if(argc != 3)
+    char buf[1024];
+    while (1)
     {
-        // 错误信息输出到标准错误流stderr
+        int n = fread(buf, 1, sizeof(buf), fp1);
+
+        if(n == 0)
+            return;
+        
+        fwrite(buf, 1 , n, fp2);
+    }
+}
+
+void copy_dir(const char *src, const char *dst){
+    // 获取三个的重要的绝对路径
+    char ori_path[1024] = {0};
+    char src_path[1024] = {0};
+    char dst_path[1024] = {0};
+
+    getcwd(ori_path, 1024);
+
+    // 获取源文件的绝对路径
+    if(chdir(src) == -1){
+        fprintf(stderr, "Error:%s\n", strerror(errno));
+        return;
+    }else
+        getcwd(src_path, 1024);
+   
+    // 获取目标文件的绝对路径
+    chdir(ori_path);
+    if(chdir(dst) == -1){
+        if(mkdir(dst, 0777) == -1){
+            perror("mkdir faile");
+            return;
+        }
+        chdir(dst);
+    }
+    getcwd(dst_path, 1024);
+
+    printf("ori_path= %s\n", ori_path);
+    printf("src_path= %s\n", src_path);
+    printf("dst_path= %s\n", dst_path);
+
+
+    // 循环地将src目录下的各个文件，拷贝到dst中去
+    DIR *dp = opendir(src_path);
+    if(dp == NULL){
+        perror("open src faile");
+        return;
+    }
+    while (1)
+    {
+        //获得read指针
+        struct dirent *ep = readdir(dp);
+        if(ep == NULL){
+            perror("read src faile");
+            return;
+        }
+        
+        // 忽略.和..
+        if(strcmp(ep->d_name, ".") == 0 || strcmp(ep->d_name, "..") == 0)
+            continue;
+        
+        // 进入源目录，获得源目录下的文件的属性
+        chdir(src_path);
+        struct stat finfo;
+        bzero(&finfo, sizeof(finfo));
+        if(stat(ep->d_name, &finfo) == -1){
+            perror("stat failed");
+            continue;
+        }
+
+        // 判断要拷贝的文件类型: 普通文件
+        if(S_ISREG(finfo.st_mode)){
+            FILE *fp1 = fopen(ep->d_name, "r");
+            if(fp1 == NULL){
+                perror("open src file failed");
+                continue;
+            }
+
+            // 进入目标目录，创建目标目录下的文件
+            chdir(dst_path);
+            FILE *fp2 = fopen(ep->d_name, "w");
+            if(fp2 == NULL){
+                perror("open dst file failed");
+                fclose(fp1);
+                continue;
+            }
+
+            copy_file(fp1, fp2);
+
+            fclose(fp1);
+            fclose(fp2);
+        }       
+        
+        // 判断要拷贝的文件类型: 目录文件
+        else if(S_ISDIR(finfo.st_mode)){
+
+            char subdst[1024] = {0};
+            chdir(dst_path);
+            mkdir(ep->d_name, 0777);
+            chdir(ep->d_name);
+            getcwd(subdst, 1024);
+
+            chdir(src_path);
+            copy_dir(ep->d_name, subdst);
+        }
+    }
+
+    closedir(dp);
+}
+
+int main(int argc, char const *argv[]) 
+{
+    if(argc != 3){
         fprintf(stderr, "Usage: %s src dst\n", argv[0]);
         return 1;
     }
 
-    // 定义stat结构体，用于存储源文件元数据信息
-    struct stat finfo;
-    // 清空结构体内存，避免脏数据干扰
-    bzero(&finfo, sizeof(finfo));
-    // 通过系统调用stat获取源文件argv[1]的属性信息
-    stat(argv[1], &finfo);
-
-    // 判断源文件是否为普通文件，是则调用文件拷贝函数
-    if(S_ISREG(finfo.st_mode)){
-        FILE *pf1 = fopen(argv[1], "r");
-        FILE *pf2 = fopen(argv[2], "w");
-        copy_file(pf1, pf2);
-        fclose(pf1);
-        fclose(pf2);
+    struct stat info;
+    bzero(&info, sizeof(info));
+    if(stat(argv[1], &info) == -1){
+        perror("stat failed");
+        return 1;
     }
 
-    // 判断源文件是否为目录，是则调用目录拷贝函数
-    else if(S_ISDIR(finfo.st_mode))
+    // 判断要拷贝的文件类型: 普通文件
+    if(S_ISREG(info.st_mode)){
+        FILE *fp1 = fopen(argv[1], "r");
+        FILE *fp2 = fopen(argv[2], "w");
+        if(fp1 == NULL || fp2 == NULL){
+            perror("open file failed");
+            if(fp1) fclose(fp1);
+            if(fp2) fclose(fp2);
+            return 1;
+        }
+
+        copy_file(fp1, fp2);
+        fclose(fp1);
+        fclose(fp2);
+    }
+
+    // 判断要拷贝的文件类型: 目录文件
+    else if(S_ISDIR(info.st_mode))
         copy_dir(argv[1], argv[2]);
 
-    // 其他文件类型不支持拷贝，打印错误提示
     else
-        fprintf(stderr, "Error: 文件类型不支持\n");
-
+        perror("文件类型错误");
     return 0;
 }

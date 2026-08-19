@@ -1,43 +1,19 @@
 # 编译产物
-[0-9]*
-# 但不要忽略以数字开头的目录、.c 和 .h 源文件
-![0-9]*/
-![0-9]*.c
-![0-9]*.h
-
-# 忽略其他编译产物
-a.out
 *.o
-*.out
-*.tmp
-*.exe
-*.obj
-*.i
-
-# Windows 区域标识文件
-*:Zone.Identifier
-
-# VS Code 配置
-.vscode/
-
-# 忽略 study 目录下的编译产物
-study/**/*.o
-study/**/*.out
-study/**/*.exe
-study/**/a.out
-
-# 无扩展名的 ELF 编译产物（ARM/x86 可执行文件）
-LCD
-rgb_serial
-c/lianxi/rgb
-c/lianxi/rgb_arm
-
-# 百万行测试数据文件（过大，不入库）
-data_structure/6.Classic_Search_Algorithms_and_Hash\ Tables/*.txt
-
-# 编译产物
+*.a
+*.so
+*.so.*
+# 可执行文件
+bmp
+bmp2
+showjpg1
+touch_panel
 main
-main_arm
-Lucky_Draw_arm
-*.o
-a.out
+main_dyn
+main_static
+2-2
+# 图片素材
+*.bmp
+*.jpg
+*.jpeg
+*.png

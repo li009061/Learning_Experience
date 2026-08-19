@@ -3,6 +3,16 @@
 *.a
 *.so
 *.so.*
+*.lo
+*.la
+*.lai
+*.Plo
+*.Po
+*.pc
+*.exe
+*.class
+*.pyc
+a.out
 # 可执行文件
 bmp
 bmp2
@@ -17,3 +27,30 @@ main_static
 *.jpg
 *.jpeg
 *.png
+# Windows 下载标记
+*:Zone.Identifier
+# IDE
+.vscode/
+.idea/
+# 第三方库源码包（作业3-1 内拷的 libpng/libjpeg）
+File_IO/zy/作业3-1/png-1.6.47/
+File_IO/zy/作业3-1/jpeg-9d/
+# 无扩展名编译产物（交叉编译出的可执行文件）
+c/zy/zy2/[0-9]*
+c/zy/zy3/[0-9]*
+c/zy/zy4/[0-9]*
+c/zy/zy5/[0-9]*
+c/zy/zy6/[0-9]*
+c/zy/zy7/[0-9]*
+c/zy/zy8/[0-9]*
+File_IO/zy/11
+File_IO/zy/12
+File_IO/zy/12_2
+File_IO/zy/81lcd
+File_IO/ktxl/03
+File_IO/ktxl/07
+Linux/ktlx/04
+Linux/ktlx/05
+data_structure/study/zy/zy5/[0-9]*
+bin/
+xianmu/*/*_arm
